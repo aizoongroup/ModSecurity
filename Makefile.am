@@ -191,6 +191,7 @@ TESTS+=test/test-cases/regression/rule-920200.json
 TESTS+=test/test-cases/regression/rule-920274.json
 TESTS+=test/test-cases/regression/secaction.json
 TESTS+=test/test-cases/regression/secargumentslimit.json
+TESTS+=test/test-cases/regression/secrequestbodyjsondepthlimit.json
 TESTS+=test/test-cases/regression/sec_component_signature.json
 TESTS+=test/test-cases/regression/secmarker.json
 TESTS+=test/test-cases/regression/secruleengine.json
