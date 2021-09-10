@@ -604,6 +604,7 @@ using namespace modsecurity::operators;
   CONFIG_SEC_CONN_W_STATE_LIMIT                "CONFIG_SEC_CONN_W_STATE_LIMIT"
   CONFIG_SEC_SENSOR_ID                         "CONFIG_SEC_SENSOR_ID"
   CONFIG_DIR_ARGS_LIMIT                        "CONFIG_DIR_ARGS_LIMIT"
+  CONFIG_DIR_REQ_BODY_JSON_DEPTH_LIMIT         "CONFIG_DIR_REQ_BODY_JSON_DEPTH_LIMIT"
   CONFIG_DIR_REQ_BODY                          "CONFIG_DIR_REQ_BODY"
   CONFIG_DIR_REQ_BODY_IN_MEMORY_LIMIT          "CONFIG_DIR_REQ_BODY_IN_MEMORY_LIMIT"
   CONFIG_DIR_REQ_BODY_LIMIT                    "CONFIG_DIR_REQ_BODY_LIMIT"
@@ -1583,6 +1584,11 @@ expression:
         driver.m_argumentsLimit.m_value = atoi($1.c_str());
       }
     /* Body limits */
+    | CONFIG_DIR_REQ_BODY_JSON_DEPTH_LIMIT
+      {
+        driver.m_requestBodyJsonDepthLimit.m_set = true;
+        driver.m_requestBodyJsonDepthLimit.m_value = atoi($1.c_str());
+      }
     | CONFIG_DIR_REQ_BODY_LIMIT
       {
         driver.m_requestBodyLimit.m_set = true;

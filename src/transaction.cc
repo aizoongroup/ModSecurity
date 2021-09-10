@@ -829,24 +829,65 @@ int Transaction::processRequestBody() {
 #else
     if (m_requestBodyProcessor == JSONRequestBody) {
 #endif
-        std::string error;
-        if (m_json->init() == true) {
-            m_json->processChunk(m_requestBody.str().c_str(),
-                m_requestBody.str().size(),
-                &error);
-            m_json->complete(&error);
-        }
-        if (error.empty() == false && m_requestBody.str().size() > 0) {
-            m_variableReqbodyError.set("1", m_variableOffset);
-            m_variableReqbodyProcessorError.set("1", m_variableOffset);
-            m_variableReqbodyErrorMsg.set("JSON parsing error: " + error,
+
+	//SIMONE
+        ms_dbg(2, "Simone: Start PATCH");
+	bool permit_bp = true; 
+        if (m_rules->m_requestBodyJsonDepthLimit.m_set) {
+	  int depth_limit = this->m_rules->m_requestBodyJsonDepthLimit.m_value;
+          ms_dbg(2, "Simone: m_requestBodyJsonDepthLimit = " + std::to_string(depth_limit));
+
+	  std::string bodystr = m_requestBody.str();
+          //ms_dbg(2, "Simone: body = " + std::string(bodystr));
+          //ms_dbg(2, "Simone: len  = " + std::to_string(bodystr.size()));
+
+	  int depth = 0;
+	  int max_depth = 0;
+	  for(unsigned int i = 0; i<bodystr.size(); i++) {
+	      if ( (bodystr[i] == '{') || (bodystr[i] == '[') ) {
+	        depth++;
+	        if (depth > max_depth)
+	          max_depth = depth;
+	          if (max_depth > depth_limit)
+		    break;
+	      }
+	      if ( ( (bodystr[i] == '}') || (bodystr[i] == ']') ) && (depth > 0) )
+	        depth--;
+          }
+          ms_dbg(2, "Simone: max_depth = " + std::to_string(max_depth));
+	  if (max_depth > depth_limit)
+              permit_bp = false;
+	}
+
+	if (permit_bp) {
+                ms_dbg(2, "Simone: INSIDE BP");
+		std::string error;
+		if (m_json->init() == true) {
+		    m_json->processChunk(m_requestBody.str().c_str(),
+			m_requestBody.str().size(),
+			&error);
+		    m_json->complete(&error);
+		}
+		if (error.empty() == false && m_requestBody.str().size() > 0) {
+		    m_variableReqbodyError.set("1", m_variableOffset);
+		    m_variableReqbodyProcessorError.set("1", m_variableOffset);
+		    m_variableReqbodyErrorMsg.set("JSON parsing error: " + error,
+			m_variableOffset);
+		    m_variableReqbodyProcessorErrorMsg.set("JSON parsing error: " \
+			+ error, m_variableOffset);
+		} else {
+		    m_variableReqbodyError.set("0", m_variableOffset);
+		    m_variableReqbodyProcessorError.set("0", m_variableOffset);
+		}
+	}
+	else {
+            m_variableReqbodyError.set("2", m_variableOffset);
+            m_variableReqbodyProcessorError.set("2", m_variableOffset);
+            m_variableReqbodyErrorMsg.set("JSON parsing error: too many nested keys",
                 m_variableOffset);
-            m_variableReqbodyProcessorErrorMsg.set("JSON parsing error: " \
-                + error, m_variableOffset);
-        } else {
-            m_variableReqbodyError.set("0", m_variableOffset);
-            m_variableReqbodyProcessorError.set("0", m_variableOffset);
-        }
+            m_variableReqbodyProcessorErrorMsg.set("JSON parsing error: too many nested keys",
+                m_variableOffset);
+	}
 #endif
 #if defined(WITH_LIBXML2) or defined(WITH_YAJL)
     } else if (m_requestBodyType == MultiPartRequestBody) {
