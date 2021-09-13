@@ -855,9 +855,10 @@ int Transaction::processRequestBody() {
 	        depth--;
           }
           ms_dbg(2, "Simone: max_depth = " + std::to_string(max_depth));
-	  if (max_depth > depth_limit)
+	  if (max_depth > depth_limit) {
               permit_bp = false;
               ms_dbg(2, "JSON parsing error: too many nested keys");
+      }
 	}
 
 	if (permit_bp) {
